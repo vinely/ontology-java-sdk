@@ -23,7 +23,7 @@ public class NativeOntIdDemo {
 
         String password = "111111";
 
-        try {
+    try {
             OntSdk ontSdk = getOntSdk();
 
             Account payer = ontSdk.getWalletMgr().createAccount(password);
@@ -44,7 +44,6 @@ public class NativeOntIdDemo {
             }
 
 
-            if(false){
             if(false){
                 Identity identity3 = ontSdk.getWalletMgr().createIdentity(password);
                 Attribute[] attributes = new Attribute[1];
