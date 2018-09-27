@@ -23,7 +23,7 @@ public class NativeOntIdDemo {
 
         String password = "111111";
 
-        try {
+    try {
             OntSdk ontSdk = getOntSdk();
 
             Account payer = ontSdk.getWalletMgr().createAccount(password);
@@ -33,7 +33,7 @@ public class NativeOntIdDemo {
             String privatekey1 = "2ab720ff80fcdd31a769925476c26120a879e235182594fbb57b67c0743558d7";
             com.github.ontio.account.Account account1 = new com.github.ontio.account.Account(Helper.hexToBytes(privatekey1),SignatureScheme.SHA256WITHECDSA);
 
-            if(true){
+            if(false){
                 Account account = ontSdk.getWalletMgr().createAccount(password);
                 com.github.ontio.account.Account account2 = ontSdk.getWalletMgr().getAccount(account.address,password,account.getSalt());
                 Identity identity = ontSdk.getWalletMgr().createIdentityFromPriKey(password, Helper.toHexString(account2.serializePrivateKey()));
@@ -44,8 +44,7 @@ public class NativeOntIdDemo {
             }
 
 
-            if(false){
-            if(false){
+            if(true){
                 Identity identity3 = ontSdk.getWalletMgr().createIdentity(password);
                 Attribute[] attributes = new Attribute[1];
                 attributes[0] = new Attribute("key1".getBytes(),"String".getBytes(),"value1".getBytes());
