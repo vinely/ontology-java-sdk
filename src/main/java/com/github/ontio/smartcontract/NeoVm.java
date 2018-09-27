@@ -28,6 +28,7 @@ import com.github.ontio.smartcontract.neovm.abi.AbiFunction;
 import com.github.ontio.sdk.exception.SDKException;
 import com.github.ontio.smartcontract.neovm.abi.BuildParams;
 import com.github.ontio.smartcontract.neovm.ClaimRecord;
+import com.github.ontio.smartcontract.neovm.SimpleStorage;
 import com.github.ontio.smartcontract.neovm.Nep5;
 import com.github.ontio.smartcontract.neovm.Record;
 
@@ -36,6 +37,7 @@ public class NeoVm {
     private Oep4 oep4Tx = null;
     private Record recordTx = null;
     private ClaimRecord claimRecordTx = null;
+    private SimpleStorage simpleStorage = null;
 
     private OntSdk sdk;
     public NeoVm(OntSdk sdk){
@@ -68,6 +70,13 @@ public class NeoVm {
         }
         return recordTx;
     }
+
+    public SimpleStorage SimpleStorage() {
+        if(simpleStorage == null){
+            simpleStorage = new SimpleStorage(sdk);
+        }
+        return simpleStorage;
+    }    
 
     public ClaimRecord claimRecord(){
         if (claimRecordTx == null){

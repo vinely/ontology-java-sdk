@@ -18,53 +18,35 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ClaimRecordTxDemo {
+public class SimpleStorageDemo {
     public static void main(String[] args) {
 
         try {
             OntSdk ontSdk = getOntSdk();
-
-
-
-
             String password = "111111";
 
             Account payerAccInfo = ontSdk.getWalletMgr().createAccount(password);
             com.github.ontio.account.Account payerAcc = ontSdk.getWalletMgr().getAccount(payerAccInfo.address,password,payerAccInfo.getSalt());
 
-
             if (ontSdk.getWalletMgr().getWallet().getIdentities().size() < 2) {
                 Identity identity = ontSdk.getWalletMgr().createIdentity(password);
-
                 ontSdk.nativevm().ontId().sendRegister(identity,password,payerAcc,ontSdk.DEFAULT_GAS_LIMIT,0);
-
                 Identity identity2 = ontSdk.getWalletMgr().createIdentity(password);
-
                 ontSdk.nativevm().ontId().sendRegister(identity2,password,payerAcc,ontSdk.DEFAULT_GAS_LIMIT,0);
-
                 ontSdk.getWalletMgr().writeWallet();
-
                 Thread.sleep(6000);
             }
 
             List<Identity> dids = ontSdk.getWalletMgr().getWallet().getIdentities();
-
-
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("Issuer", dids.get(0).ontid);
             map.put("Subject", dids.get(1).ontid);
-
             Map clmRevMap = new HashMap();
             clmRevMap.put("typ","AttestContract");
             clmRevMap.put("addr",dids.get(1).ontid.replace(Common.didont,""));
-
             String claim = ontSdk.nativevm().ontId().createOntIdClaim(dids.get(0).ontid,password,dids.get(0).controls.get(0).getSalt(), "claim:context", map, map,clmRevMap,System.currentTimeMillis()/1000 +100000);
-            System.out.println(claim);
-
             boolean b = ontSdk.nativevm().ontId().verifyOntIdClaim(claim);
-            System.out.println(b);
 
-//            System.exit(0);
 
             Account account = ontSdk.getWalletMgr().importAccount("blDuHRtsfOGo9A79rxnJFo2iOMckxdFDfYe2n6a9X+jdMCRkNUfs4+C4vgOfCOQ5","111111","AazEvfQPcQ2GEFFPLF1ZLwQ7K5jDn81hve",Base64.getDecoder().decode("0hAaO6CT+peDil9s5eoHyw=="));
             AccountInfo info = ontSdk.getWalletMgr().getAccountInfo(account.address,"111111",account.getSalt());
@@ -77,47 +59,29 @@ public class ClaimRecordTxDemo {
 
             System.out.println("ClaimId:" + payload.getString("jti"));
             
-            ontSdk.neovm().claimRecord().setContractAddress("80c2b7297b006e5ca8fcd52766453219bc5c4435");
+            String testKey = "MykeyRing1";
+            String testValue= "asdfajt4twetewjor23rv";
 
-            // ontSdk.neovm().claimRecord().setContractAddress("36bb5c053b6b839c8f6b923fe852f91239b9fccc");
-            //
-//            String getstatusRes9 = ontSdk.neovm().claimRecord().sendGetStatus(payload.getString("jti"));
-//            System.out.println("getstatusResBytes:" + getstatusRes9);
 
-            String commitHash = ontSdk.neovm().claimRecord().sendCommit(dids.get(0).ontid,password,dids.get(0).controls.get(0).getSalt(),dids.get(1).ontid,payload.getString("jti"),account1,ontSdk.DEFAULT_GAS_LIMIT,0);
+            String commitHash = ontSdk.neovm().SimpleStorage().sendPost(dids.get(0).ontid,password,dids.get(0).controls.get(0).getSalt(),dids.get(1).ontid,testKey, testValue ,account1,ontSdk.DEFAULT_GAS_LIMIT,0);
             System.out.println("commitRes:" + commitHash);
             Thread.sleep(6000);
-            Object obj = ontSdk.getConnect().getSmartCodeEvent(commitHash);
-            System.out.println(obj);
 
-
-            System.out.println(Helper.toHexString(dids.get(0).ontid.getBytes()));
-            System.out.println(Helper.toHexString(dids.get(1).ontid.getBytes()));
-            System.out.println(Helper.toHexString(payload.getString("jti").getBytes()));
-            System.out.println(payload.getString("jti"));
-
-
-            String getstatusRes = ontSdk.neovm().claimRecord().sendGetStatus(payload.getString("jti"));
-            System.out.println("getstatusResBytes:" + getstatusRes);
+            String getstatusRes = ontSdk.neovm().SimpleStorage().sendGet(testKey);
+            System.out.println("[Get]:" + getstatusRes);
             Thread.sleep(6000);
 
-//            System.exit(0);
 
-            String revokeHash = ontSdk.neovm().claimRecord().sendRevoke(dids.get(0).ontid,password,dids.get(0).controls.get(0).getSalt(),payload.getString("jti"),account1,ontSdk.DEFAULT_GAS_LIMIT,0);
+            testValue= "1234567";
+            String revokeHash = ontSdk.neovm().SimpleStorage().sendPost(dids.get(0).ontid,password,dids.get(0).controls.get(0).getSalt(),dids.get(1).ontid,testKey, testValue ,account1,ontSdk.DEFAULT_GAS_LIMIT,0);
             System.out.println("revokeRes:" + revokeHash);
             Thread.sleep(6000);
-            System.out.println(ontSdk.getConnect().getSmartCodeEvent(revokeHash));
 
+            String getstatusRes2 = ontSdk.neovm().SimpleStorage().sendGet(testKey);
 
-            String getstatusRes2 = ontSdk.neovm().claimRecord().sendGetStatus(payload.getString("jti"));
-
-            System.out.println("getstatusResBytes2:" + getstatusRes2);
+            System.out.println("[Get2]:" + getstatusRes2);
 
             System.exit(0);
-
-
-//            boolean b = ontSdk.getOntIdTx().verifyOntIdClaim(claim);
-//            System.out.println(b);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -138,7 +102,7 @@ public class ClaimRecordTxDemo {
         wm.setRestful(restUrl);
         wm.setDefaultConnect(wm.getRestful());
 
-        wm.openWalletFile("ClaimRecordTxDemo.json");
+        wm.openWalletFile("SimpleStorageDemo.json");
 
         return wm;
     }

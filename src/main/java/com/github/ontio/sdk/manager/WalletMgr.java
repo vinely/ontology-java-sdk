@@ -381,7 +381,7 @@ public class WalletMgr {
     }
 
     private com.github.ontio.account.Account getAccountByAddress(Address address,String password,byte[] salt) throws Exception {
-        try {
+        // try {
             for (Account e : walletInMem.getAccounts()) {
                 if (e.address.equals(address.toBase58())) {
                     String prikey = com.github.ontio.account.Account.getGcmDecodedPrivateKey(e.key, password, e.address,salt, walletFile.getScrypt().getN(), scheme);
@@ -396,9 +396,9 @@ public class WalletMgr {
                     return new com.github.ontio.account.Account(Helper.hexToBytes(prikey), scheme);
                 }
             }
-        } catch (Exception e) {
-            throw new SDKException(ErrorCode.GetAccountByAddressErr);
-        }
+        // } catch (Exception e) {
+        //     throw new SDKException(ErrorCode.GetAccountByAddressErr);
+        // }
         throw new SDKException(ErrorCode.OtherError("Account null"));
     }
 

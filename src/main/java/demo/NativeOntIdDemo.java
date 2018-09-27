@@ -34,7 +34,7 @@ public class NativeOntIdDemo {
             com.github.ontio.account.Account account1 = new com.github.ontio.account.Account(Helper.hexToBytes(privatekey1),SignatureScheme.SHA256WITHECDSA);
 
 
-            if(true){
+            if(false){
                 Identity identity3 = ontSdk.getWalletMgr().createIdentity(password);
                 Attribute[] attributes = new Attribute[1];
                 attributes[0] = new Attribute("key1".getBytes(),"String".getBytes(),"value1".getBytes());
@@ -43,9 +43,11 @@ public class NativeOntIdDemo {
                 Thread.sleep(6000);
                 String ddo = ontSdk.nativevm().ontId().sendGetDDO(identity3.ontid);
                 System.out.println(ddo);
+                String attr = ontSdk.nativevm().ontId().sendGetAttributes(identity3.ontid);
+                System.out.println(attr);
                 System.exit(0);
             }
-            if(false){
+            if(true){
                 if(ontSdk.getWalletMgr().getWallet().getIdentities().size() < 1){
                     Identity identity = ontSdk.getWalletMgr().createIdentity(password);
                     ontSdk.nativevm().ontId().sendRegister(identity,password,payerAcct,ontSdk.DEFAULT_GAS_LIMIT,0);
@@ -53,17 +55,17 @@ public class NativeOntIdDemo {
                     Thread.sleep(6000);
                 }
                 Identity identity = ontSdk.getWalletMgr().getWallet().getIdentities().get(0);
-//                String ddo = ontSdk.nativevm().ontId().sendGetDDO(identity.ontid);
-//                System.out.println(ddo);
+               String ddo = ontSdk.nativevm().ontId().sendGetDDO(identity.ontid);
+               System.out.println(ddo);
 
                 Attribute[] attributes = new Attribute[1];
-                attributes[0] = new Attribute("key1".getBytes(),"String".getBytes(),"value1".getBytes());
+                attributes[0] = new Attribute("key4".getBytes(),"String6".getBytes(),"value7".getBytes());
                 byte[] salt = identity.controls.get(0).getSalt();
-//                ontSdk.nativevm().ontId().sendAddAttributes(identity.ontid,password,identity.controls.get(0).getSalt(),attributes,payerAcct,ontSdk.DEFAULT_GAS_LIMIT,0);
+               ontSdk.nativevm().ontId().sendAddAttributes(identity.ontid,password,identity.controls.get(0).getSalt(),attributes,payerAcct,ontSdk.DEFAULT_GAS_LIMIT,0);
 //                ontSdk.nativevm().ontId().sendRemoveAttribute(identity.ontid,password,identity.controls.get(0).getSalt(),"key1",payerAcct,ontSdk.DEFAULT_GAS_LIMIT,0);
 //                ontSdk.nativevm().ontId().sendAddRecovery(identity.ontid,password,salt,account1.getAddressU160().toBase58(),payerAcct,ontSdk.DEFAULT_GAS_LIMIT,0);
 //                ontSdk.nativevm().ontId().sendAddPubKey(identity.ontid,password,salt,Helper.toHexString(account1.serializePublicKey()),payerAcct,ontSdk.DEFAULT_GAS_LIMIT,0);
-                ontSdk.nativevm().ontId().sendRemovePubKey(identity.ontid,password,salt,Helper.toHexString(account1.serializePublicKey()),payerAcct,ontSdk.DEFAULT_GAS_LIMIT,0);
+                // ontSdk.nativevm().ontId().sendRemovePubKey(identity.ontid,password,salt,Helper.toHexString(account1.serializePublicKey()),payerAcct,ontSdk.DEFAULT_GAS_LIMIT,0);
                 Thread.sleep(6000);
                 String ddo2 = ontSdk.nativevm().ontId().sendGetDDO(identity.ontid);
                 System.out.println(ddo2);
