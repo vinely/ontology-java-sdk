@@ -4,7 +4,20 @@
 
 [English](../en/asset.md) / 中文
 
-## 数据结构说明
+## 钱包文件及规范
+
+钱包文件是一个Json格式的数据存储文件，可同时存储多个数字身份和多个数字资产账户。具体参考[钱包文件规范](../en/Wallet_File_Specification.md)。
+
+为了管理数字资产，您首先需要创建/打开一个钱包文件。
+
+```java
+//如果不存在钱包文件，会自动创建钱包文件。
+OntSdk ontSdk = OntSdk.getInstance();
+ontSdk.openWalletFile("Demo.json");
+```
+> 注：目前仅支持文件形式钱包文件，也可以扩展支持数据库或其他存储方式。
+
+## 资产账户数据结构说明
 `address` 是base58编码的账户地址。
 `label` 是账户的名称。
 `isDefault`表明账户是否是默认的账户。默认值为false。
@@ -20,7 +33,7 @@
 `hash` hash算法，用于派生秘钥。
 
 
-```
+```java
 public class Account {
     public String label = "";
     public String address = "";
@@ -40,9 +53,11 @@ public class Account {
 
 ## 数字资产账户管理
 
+以下举例说明如何管理钱包中的资产账户。
+
 * 创建数字资产账号
 
-```
+```java
 OntSdk ontSdk = OntSdk.getInstance();
 Account acct = ontSdk.getWalletMgr().createAccount("password");
 //创建的账号或身份只在内存中，如果要写入钱包文件，需调用写入接口
@@ -52,7 +67,7 @@ ontSdk.getWalletMgr().writeWallet();
 
 * 移除数字资产账号
 
-```
+```java
 ontSdk.getWalletMgr().getWallet().removeAccount(address);
 //写入钱包
 ontSdk.getWalletMgr().writeWallet();
@@ -60,140 +75,147 @@ ontSdk.getWalletMgr().writeWallet();
 
 * 设置默认数字资产账号
 
-```
+```java
 ontSdk.getWalletMgr().getWallet().setDefaultAccount(index);
 ontSdk.getWalletMgr().getWallet().setDefaultAccount("address");
 ```
 > Note: index表示设置第index个account为默认账户，address表示设置该address对应的account为默认账户
 
-## 原生数字资产
+## 原生数字资产接口
 
 
-ont和ong资产接口列表
+原生数字资产包括ONT和ONG。封装了构造交易、交易签名、发送交易。
 
-1. String sendTransfer(Account sendAcct, String recvAddr, long amount, Account payerAcct, long gaslimit, long gasprice)
+#### 1. 转账
+```java
+String sendTransfer(Account sendAcct, String recvAddr, long amount, Account payerAcct, long gaslimit, long gasprice)
+```
+功能说明： 从发送方转移一定数量的资产到接收方账户
 
-    功能说明： 从发送方转移一定数量的资产到接收方账户
+参数说明：
 
-    参数说明：
+| 参数      | 字段   | 类型  | 描述 |             说明 |
+| ----- | ------- | ------ | ------------- | ----------- |
+| 输入参数 | sendAcct| Account | 发送方账户 | 必选 |
+|        | recvAddr    | Account | 接收方地址   | 必选 |
+|        | amount        | long | 转移的资产数量|必选|
+|        | payerAcct| Account  |支付交易费用的账户 | 必选|
+|        | gaslimit   | long | 声明发行者和申请者ontid | 必选 |
+|        | gasprice   | long | gas价格 | 必选 |
+| 输出参数 | 交易hash   | String  | 交易hash  |  |
 
-    sendAcct： 发送方账户
+#### 2. 授权转移资产
+```java
+String sendApprove(Account sendAcct, String recvAddr, long amount, Account payerAcct, long gaslimit, long gasprice)
+```
+功能说明： sendAddr账户允许recvAddr转移amount数量的资产
 
-    recvAddr ： 接收方地址
+参数说明：
+       
+| 参数      | 字段   | 类型  | 描述 |             说明 |
+| ----- | ------- | ------ | ------------- | ----------- |
+| 输入参数 | sendAcct| Account | 发送方账户 | 必选 |
+|        | recvAddr    | Account | 接收方地址   | 必选 |
+|        | amount        | long | 授权的资产数量|必选|
+|        | payerAcct| Account  |支付交易费用的账户 | 必选|
+|        | gaslimit   | long | 声明发行者和申请者ontid | 必选 |
+|        | gasprice   | long | gas价格 | 必选 |
+| 输出参数 | 交易hash   | String  | 交易hash  |  |
 
-    amount ： 转移的资产数量
+#### 3. TransferFrom
 
-    payerAcct：支付交易费用的账户
+```java
+String sendTransferFrom(Account sendAcct, String fromAddr, String toAddr, long amount, Account payerAcct, long gaslimit, long gasprice)
+```
+功能说明： sendAcct账户从fromAddr账户转移amount数量的资产到toAddr账户
 
-    gaslimit：用于计算gas,gaslimit * gasprice = gas
+参数说明：     
+        
+| 参数      | 字段   | 类型  | 描述 |             说明 |
+| ----- | ------- | ------ | ------------- | ----------- |
+| 输入参数 | sendAcct| Account | 发送方账户 | 必选 |
+|        | fromAddr    | Account | 资产转出方地址   | 必选 |
+|        | toAddr    | Account | 资产转入方地址   | 必选 |
+|        | amount        | long | 转移的资产数量|必选|
+|        | payerAcct| Account  |支付交易费用的账户 | 必选|
+|        | gaslimit   | long | 声明发行者和申请者ontid | 必选 |
+|        | gasprice   | long | gas价格 | 必选 |
+| 输出参数 | 交易hash   | String  | 交易hash  |  |
 
-    gasprice ： gas价格
+#### 4. 查询余额
 
-    返回值：交易hash
+```java
+long queryBalanceOf(String address)
+```
+功能说明： 查询账户address资产余额
 
+参数说明：
 
-2. String sendApprove(Account sendAcct, String recvAddr, long amount, Account payerAcct, long gaslimit, long gasprice)
+```address```： 账户地址
 
-       功能说明： sendAddr账户允许recvAddr转移amount数量的资产
+返回值：账户余额
 
-       参数说明：
+5. 查询Allowance
+```java
+long queryAllowance(String fromAddr,String toAddr)
+```
+功能说明： 查询fromAddr授权toAddr转移的数量
 
-       sendAcct： 发送方账户
+参数说明：
 
-       recvAddr： 接收方地址
+```fromAddr```: 授权转出方的账户地址
 
-       amount： 转移的资产数量
+```toAddr```: 允许转入方的账户地址
 
-       payerAcct：支付交易费用的账号
+返回值：授权转移的数量
 
-       gaslimit：用于计算gas,gaslimit * gasprice = gas
+#### 6. 查询资产名
 
-       gasprice ： gas价格
+```java
+String queryName()
+```
+功能说明： 查询资产名信息
 
-       返回值：交易hash
+参数说明：
 
-3. String sendTransferFrom(Account sendAcct, String fromAddr, String toAddr, long amount, Account payerAcct, long gaslimit, long gasprice)
+返回值：资产名称
 
-        功能说明： sendAcct账户从fromAddr账户转移amount数量的资产到toAddr账户
+#### 7. 查询资产Symbol
 
-        参数说明：
+```java
+String querySymbol()
+```
+功能说明： 查询资产Symbol信息
 
-        sendAcct： 发送方账户
+参数说明：
 
-        password： 发送方密码
+返回值：Symbol信息
 
-        fromAddr： 资产转出方地址
+#### 8. 查询资产的精确度
 
-        toAddr： 资产转入方地址
+```java
+long queryDecimals()
+```
+功能说明： 查询资产的精确度
 
-        amount： 转移的资产数量
+参数说明：
 
-        payerAcct：支付交易费用的账号
-
-        gaslimit：用于计算gas,gaslimit * gasprice = gas
-
-        gasprice ： gas价格
-
-        返回值：交易hash
-
-4. long queryBalanceOf(String address)
-
-         功能说明： 查询账户address资产余额
-
-         参数说明：
-
-         address： 账户地址
-
-         返回值：账户余额
-
-5. long queryAllowance(String fromAddr,String toAddr)
-
-         功能说明： 查询fromAddr授权toAddr转移的数量
-
-         参数说明：
-
-         fromAddr: 授权转出方的账户地址
-
-         toAddr: 允许转入方的账户地址
-
-         返回值：授权转移的数量
-
-6. String queryName()
-
-          功能说明： 查询资产名信息
-
-          参数说明：
-
-          返回值：资产名称
-
-7. String querySymbol()
-
-           功能说明： 查询资产Symbol信息
-
-           参数说明：
-
-           返回值：Symbol信息
-
-8. long queryDecimals()
-
-            功能说明： 查询资产的精确度
-
-            参数说明：
-
-            返回值：精确度
+返回值：精确度
             
-9. long queryTotalSupply()
+#### 9. 查询资产的总供应量
+```java
+long queryTotalSupply()
+```
+功能说明： 查询资产的总供应量
 
-             功能说明： 查询资产的总供应量
+参数说明：
 
-             参数说明：
-
-             返回值：总供应量
+返回值：总供应量
 
 
 资产转移示例代码：
 
-```
+```java
 //step1:获得ontSdk实例
 OntSdk sdk = OntSdk.getInstance();
 sdk.setRpc(url);
@@ -205,7 +227,7 @@ com.github.ontio.account.Account account1 = new com.github.ontio.account.Account
 ontSdk.nativevm().ont().sendTransfer(account1,"TA4pCAb4zUifHyxSx32dZRjTrnXtxEWKZr",10000,account1,ontSdk.DEFAULT_GAS_LIMIT,0);
 ```
 
-## nep-5智能合约数字资产
+## nep-5智能合约数字资产例子
 
 nep-5文档：
 >https://github.com/neo-project/proposals/blob/master/nep-5.mediawiki
@@ -330,57 +352,5 @@ namespace Nep5Template
 }
 ```
 
-部署合约：
-```
-  InputStream is = new FileInputStream("C:\\smartcontract.avm");//
-  byte[] bys = new byte[is.available()];
-  is.read(bys);
-  is.close();
-  String code = Helper.toHexString(bys);
-  System.out.println("Code:" + Helper.toHexString(bys));
-  System.out.println("CodeAddress:" + Helper.getCodeAddress(code, VmType.NEOVM.value()));
 
-  ontSdk.setCodeAddress(Helper.getCodeAddress(code, VmType.NEOVM.value()));
-  Transaction tx = ontSdk.getSmartcodeTx().makeDeployCodeTransaction(code, true, "name", "v1.0", "author", "email", "desc", VmType.NEOVM.value());
-```
-调用合约：
-
-```
-  AbiInfo abiinfo = JSON.parseObject(nep5abi, AbiInfo.class);
-  //选个智能合约方法
-  AbiFunction func = abiinfo.getFunction("Transfer");
-  func.name = func.name.toLowerCase();
-  //设置方法的参数
-  func.setParamsValue(Address.decodeBase58(sendAddr).toArray(),Address.decodeBase58(recvAddr).toArray(),amount);
-  Transaction tx = sdk.getSmartcodeTx().invokeTransaction(sendAddr,password,func,VmType.NEOVM.value());
-  //签名
-  sdk.signTx(tx, sendAddr, password);
-  boolean b = sdk.getConnectMgr().sendRawTransaction(tx.toHexString());
-```
-
-## 说明
-
-* codeAddress是什么？
-
-```
-是智能合约的唯一标识。在这里代表资产合约的codeAddress。
-```
-
-* invoke时为什么要传入账号和密码？
-
-```
-调用智能合约时需要用户签名，钱包中保存的是加密后的用户私钥，需要密码才能解密获取私钥。
-```
-
-* 查询资产操作时，智能合约预执行是怎么回事，如何使用？
-
-```
-如智能合约get相关操作，从智能合约存储空间里读取数据，无需走节点共识，只在该节点执行即可返回结果。
-发送交易时调用预执行接口
-Object result =  sdk.getConnect().sendRawTransactionPreExec(txHex);
-```
-
-* 想查看转账时的推送结果？
-
-
-请查看智能合约采用websocket连接调用合约方法，详见[smartcontract](smartcontract.md)。
+查看如何部署和调用智能合约，详见[smartcontract](smartcontract.md)。

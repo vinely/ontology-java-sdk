@@ -93,7 +93,7 @@ public class RpcClient extends AbstractConnector {
     @Override
     public int getBlockHeight() throws RpcException, IOException {
         Object result = rpc.call("getblockcount");
-        return (int) result;
+        return (int) result - 1;
     }
 
     @Override
@@ -247,6 +247,26 @@ public class RpcClient extends AbstractConnector {
         Object result = rpc.call("getversion");
         try {
             return (String)result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public String getGrantOng(String address) throws ConnectorException, IOException {
+        Object result = rpc.call("getgrantong",address);
+        try {
+            return (String) result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public int getNetworkId() throws ConnectorException, IOException {
+        Object result = rpc.call("getnetworkid");
+        try {
+            return (int)result;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
