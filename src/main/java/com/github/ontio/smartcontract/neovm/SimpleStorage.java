@@ -46,9 +46,9 @@ import static demo.NeoVmDemo.abi;
 
 public class SimpleStorage {
     private OntSdk sdk;
-    private String contractAddress = "ad6b2d3dad99381e2670b3e2f379c15d1e940178";
+    private String contractAddress = "015772ced12816c00ffe6812787a97fb612893dc";
 
-    private String abi = "{\"hash\":\"0xad6b2d3dad99381e2670b3e2f379c15d1e940178\",\"entrypoint\":\"Main\",\"functions\":[{\"name\":\"Main\",\"parameters\":[{\"name\":\"operation\",\"type\":\"String\"},{\"name\":\"args\",\"type\":\"Array\"}],\"returntype\":\"Any\"},{\"name\":\"Post\",\"parameters\":[{\"name\":\"key\",\"type\":\"ByteArray\"},{\"name\":\"value\",\"type\":\"ByteArray\"}],\"returntype\":\"Boolean\"},{\"name\":\"Put\",\"parameters\":[{\"name\":\"key\",\"type\":\"ByteArray\"},{\"name\":\"value\",\"type\":\"ByteArray\"}],\"returntype\":\"Boolean\"},{\"name\":\"Get\",\"parameters\":[{\"name\":\"key\",\"type\":\"ByteArray\"}],\"returntype\":\"ByteArray\"},{\"name\":\"Remove\",\"parameters\":[{\"name\":\"key\",\"type\":\"ByteArray\"}],\"returntype\":\"Boolean\"}],\"events\":[{\"name\":\"ErrorMsg\",\"parameters\":[{\"name\":\"id\",\"type\":\"ByteArray\"},{\"name\":\"error\",\"type\":\"String\"}],\"returntype\":\"Void\"}]}";
+    private String abi = "{\"hash\":\"0x015772ced12816c00ffe6812787a97fb612893dc\",\"entrypoint\":\"Main\",\"functions\":[{\"name\":\"Main\",\"parameters\":[{\"name\":\"operation\",\"type\":\"String\"},{\"name\":\"args\",\"type\":\"Array\"}],\"returntype\":\"Any\"},{\"name\":\"Post\",\"parameters\":[{\"name\":\"key\",\"type\":\"ByteArray\"},{\"name\":\"value\",\"type\":\"ByteArray\"}],\"returntype\":\"Boolean\"},{\"name\":\"Put\",\"parameters\":[{\"name\":\"key\",\"type\":\"ByteArray\"},{\"name\":\"value\",\"type\":\"ByteArray\"}],\"returntype\":\"Boolean\"},{\"name\":\"Get\",\"parameters\":[{\"name\":\"key\",\"type\":\"ByteArray\"}],\"returntype\":\"ByteArray\"},{\"name\":\"Remove\",\"parameters\":[{\"name\":\"key\",\"type\":\"ByteArray\"}],\"returntype\":\"Boolean\"}],\"events\":[{\"name\":\"ErrorMsg\",\"parameters\":[{\"name\":\"id\",\"type\":\"ByteArray\"},{\"name\":\"error\",\"type\":\"String\"}],\"returntype\":\"Void\"}]}";
 
     public SimpleStorage(OntSdk sdk) {
         this.sdk = sdk;
@@ -149,9 +149,10 @@ public class SimpleStorage {
         func.setParamsValue(key.getBytes());
         Object obj =  sdk.neovm().sendTransaction(Helper.reverse(contractAddress),null,null,0,0,func, true);
         String res = ((JSONObject)obj).getString("Result");
-        if(res.equals("")){
+        res = new String(Helper.hexToBytes(res));
+        if(res.equals(" ")){
             return "";
         }
-        return new String(Helper.hexToBytes(res));
+        return res;
     }
 }
