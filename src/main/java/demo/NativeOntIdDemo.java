@@ -19,20 +19,92 @@ import java.util.Map;
 
 public class NativeOntIdDemo {
 
+
     public static void main(String[] args) {
 
-        String password = "111111";
+        String password = "0t8JuUQVF2QRvZ1n";
+        final class IdentityData {
+            public String Id;
+            public String Name;
+            public String Birthday;
+            public Identity Identity;
+            public Attribute[] Attributes =new Attribute[2];
+            public IdentityData(String id, String name, String birth){
+                Id = id;
+                Name = name;
+                Birthday = birth;
+            }
+    
+        }
+
+        IdentityData[] data = new IdentityData[]{
+            new IdentityData("52250219601117581x", "曹正喜", "1960-11-17"),
+            new IdentityData("52250219601117556x", "曹正", "1960-11-18"),
+            new IdentityData("52250219601117589y", "曹喜", "1960-11-27"),
+            new IdentityData("522502196011175800", "曹操", "1960-11-37"),
+            new IdentityData("52250219601117581x", "曹正喜", "1960-11-17"),
+            new IdentityData("52250219601117556x", "曹正", "1960-11-18"),
+            new IdentityData("52250219601117589y", "曹喜", "1960-11-27"),
+            new IdentityData("522502196011175800", "曹操", "1960-11-37"),
+            new IdentityData("52250219601117581x", "曹正喜", "1960-11-17"),
+            // new IdentityData("52250219601117556x", "曹正", "1960-11-18"),
+            // new IdentityData("52250219601117589y", "曹喜", "1960-11-27"),
+            // new IdentityData("522502196011175800", "曹操", "1960-11-37"),
+            // new IdentityData("52250219601117581x", "曹正喜", "1960-11-17"),
+            // new IdentityData("52250219601117556x", "曹正", "1960-11-18"),
+            // new IdentityData("52250219601117589y", "曹喜", "1960-11-27"),
+            // new IdentityData("522502196011175800", "曹操", "1960-11-37"),                                    
+        };
+
 
         try {
             OntSdk ontSdk = getOntSdk();
-
             Account payer = ontSdk.getWalletMgr().createAccount(password);
-
             com.github.ontio.account.Account payerAcct = ontSdk.getWalletMgr().getAccount(payer.address,password,ontSdk.getWalletMgr().getWallet().getAccount(payer.address).getSalt());
             String privatekey0 = "c19f16785b8f3543bbaf5e1dbb5d398dfa6c85aaad54fc9d71203ce83e505c07";
             String privatekey1 = "2ab720ff80fcdd31a769925476c26120a879e235182594fbb57b67c0743558d7";
             com.github.ontio.account.Account account1 = new com.github.ontio.account.Account(Helper.hexToBytes(privatekey1),SignatureScheme.SHA256WITHECDSA);
 
+
+            if (true){
+                // prepare 
+                for(int i=0; i< data.length; i++){
+                    ontSdk.openWalletFile(data[i].Id+".json");
+                    data[i].Identity = ontSdk.getWalletMgr().createIdentity(password);
+                    data[i].Attributes[0] = new Attribute("name".getBytes(),"String".getBytes(),data[i].Name.getBytes());
+                    data[i].Attributes[1] = new Attribute("birthday".getBytes(),"String".getBytes(),data[i].Birthday.getBytes());                    
+                    ontSdk.getWalletMgr().writeWallet();
+                }   
+                
+
+                //work 
+                long t1 = System.currentTimeMillis();
+                for(int i=0; i< data.length; i++){
+                    ontSdk.openWalletFile(data[i].Id+".json");
+                    ontSdk.nativevm().ontId().sendRegisterWithAttrs(data[i].Identity,password,data[i].Attributes,payerAcct,ontSdk.DEFAULT_GAS_LIMIT,0);
+                }
+                // for(int i=0; i< data.length; i++){
+                //     ontSdk.openWalletFile(data[i].Id+".json");
+                //     ontSdk.nativevm().ontId().sendRegister(data[i].Identity,password,payerAcct,ontSdk.DEFAULT_GAS_LIMIT,0);
+                // }
+                // for(int i=0; i< data.length; i++){
+                //     System.out.println("Attribute - "+i);
+                //     ontSdk.openWalletFile(data[i].Id+".json");
+                //     ontSdk.nativevm().ontId().sendAddAttributes(data[i].Identity.ontid,password,data[i].Identity.controls.get(0).getSalt(),data[i].Attributes,payerAcct,ontSdk.DEFAULT_GAS_LIMIT,0);
+                // }
+                long t2 = System.currentTimeMillis();
+                System.out.println("time is :" + (t2 -t1)/1000.0 );
+
+
+                // show result 
+                // Thread.sleep(6000);
+                // for(int i=0; i< data.length; i++){                
+                //     String ddo = ontSdk.nativevm().ontId().sendGetDDO(data[i].Identity.ontid);
+                //     System.out.println(ddo);
+                // }
+                
+                System.exit(0);                              
+            }
 
             if(false){
                 Identity identity3 = ontSdk.getWalletMgr().createIdentity(password);

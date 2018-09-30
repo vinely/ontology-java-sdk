@@ -71,12 +71,12 @@ public class SimpleStorageDemo {
             System.out.println("[Get]:" + getstatusRes);
             Thread.sleep(6000);
 
-
+            
             testValue= "1234567";
             String revokeHash = ontSdk.neovm().SimpleStorage().sendPost(dids.get(0).ontid,password,dids.get(0).controls.get(0).getSalt(),dids.get(1).ontid,testKey, testValue ,account1,ontSdk.DEFAULT_GAS_LIMIT,0);
             System.out.println("revokeRes:" + revokeHash);
             Thread.sleep(6000);
-
+            //testKey ="dsf";
             String getstatusRes2 = ontSdk.neovm().SimpleStorage().sendGet(testKey);
 
             System.out.println("[Get2]:" + getstatusRes2);
@@ -89,13 +89,17 @@ public class SimpleStorageDemo {
     }
 
     public static OntSdk getOntSdk() throws Exception {
-//        String ip = "http://polaris1.ont.io";
+
         String ip = "http://127.0.0.1";
-//        String ip = "http://54.222.182.88;
-//        String ip = "http://101.132.193.149";
         String restUrl = ip + ":" + "20334";
         String rpcUrl = ip + ":" + "20336";
         String wsUrl = ip + ":" + "20335";
+
+        //String ip = "http://120.79.231.116";
+        // String ip = "http://47.95.1.199";
+        // String restUrl = ip + ":" + "8013";
+        // String rpcUrl = ip + ":" + "8012";
+        // String wsUrl = ip + ":" + "8014";        
 
         OntSdk wm = OntSdk.getInstance();
         wm.setRpc(rpcUrl);
