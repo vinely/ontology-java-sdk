@@ -162,7 +162,7 @@ public class OntId {
         }
         IdentityInfo info = sdk.getWalletMgr().getIdentityInfo(ident.ontid, password,ident.controls.get(0).getSalt());
         String ontid = info.ontid;
-        Transaction tx = makeRegisterWithAttrs(ontid, password,ident.controls.get(0).getSalt(), attributes, payerAcct.getAddressU160().toBase58(), gaslimit, gasprice);
+        Transaction tx = makeRegisterWithAttrs(info, password,ident.controls.get(0).getSalt(), attributes, payerAcct.getAddressU160().toBase58(), gaslimit, gasprice);
         sdk.signTx(tx, ontid, password,ident.controls.get(0).getSalt());
         sdk.addSign(tx, payerAcct);
         Identity identity = sdk.getWalletMgr().getWallet().addOntIdController(ontid, info.encryptedPrikey, info.ontid,info.pubkey);
@@ -181,7 +181,7 @@ public class OntId {
      * @return
      * @throws Exception
      */
-    public Transaction makeRegisterWithAttrs(String ontid, String password,byte[] salt, Attribute[] attributes, String payer, long gaslimit, long gasprice) throws Exception {
+    public Transaction makeRegisterWithAttrs(IdentityInfo info, String password,byte[] salt, Attribute[] attributes, String payer, long gaslimit, long gasprice) throws Exception {
         if (password == null || password.equals("") || payer == null || payer.equals("")) {
             throw new SDKException(ErrorCode.ParamErr("parameter should not be null"));
         }
@@ -191,11 +191,10 @@ public class OntId {
         if (contractAddress == null) {
             throw new SDKException(ErrorCode.NullCodeHash);
         }
-        IdentityInfo info = sdk.getWalletMgr().getIdentityInfo(ontid, password,salt);
         byte[] pk = Helper.hexToBytes(info.pubkey);
 
         List list = new ArrayList();
-        Struct struct = new Struct().add(ontid.getBytes(), pk);
+        Struct struct = new Struct().add(info.ontid.getBytes(), pk);
         struct.add(attributes.length);
         for (int i = 0; i < attributes.length; i++) {
             struct.add(attributes[i].key, attributes[i].valueType, attributes[i].value);

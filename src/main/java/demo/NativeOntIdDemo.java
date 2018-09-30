@@ -11,6 +11,7 @@ import com.github.ontio.sdk.info.AccountInfo;
 import com.github.ontio.sdk.info.IdentityInfo;
 import com.github.ontio.sdk.wallet.Account;
 import com.github.ontio.sdk.wallet.Identity;
+import com.github.ontio.crypto.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ public class NativeOntIdDemo {
             public String Name;
             public String Birthday;
             public Identity Identity;
+            public Transaction Tx;
             public Attribute[] Attributes =new Attribute[2];
             public IdentityData(String id, String name, String birth){
                 Id = id;
@@ -47,13 +49,13 @@ public class NativeOntIdDemo {
             new IdentityData("52250219601117589y", "曹喜", "1960-11-27"),
             new IdentityData("522502196011175800", "曹操", "1960-11-37"),
             new IdentityData("52250219601117581x", "曹正喜", "1960-11-17"),
-            // new IdentityData("52250219601117556x", "曹正", "1960-11-18"),
-            // new IdentityData("52250219601117589y", "曹喜", "1960-11-27"),
-            // new IdentityData("522502196011175800", "曹操", "1960-11-37"),
-            // new IdentityData("52250219601117581x", "曹正喜", "1960-11-17"),
-            // new IdentityData("52250219601117556x", "曹正", "1960-11-18"),
-            // new IdentityData("52250219601117589y", "曹喜", "1960-11-27"),
-            // new IdentityData("522502196011175800", "曹操", "1960-11-37"),                                    
+            new IdentityData("52250219601117556x", "曹正", "1960-11-18"),
+            new IdentityData("52250219601117589y", "曹喜", "1960-11-27"),
+            new IdentityData("522502196011175800", "曹操", "1960-11-37"),
+            new IdentityData("52250219601117581x", "曹正喜", "1960-11-17"),
+            new IdentityData("52250219601117556x", "曹正", "1960-11-18"),
+            new IdentityData("52250219601117589y", "曹喜", "1960-11-27"),
+            new IdentityData("522502196011175800", "曹操", "1960-11-37"),                                    
         };
 
 
@@ -68,40 +70,50 @@ public class NativeOntIdDemo {
 
             if (true){
                 // prepare 
-                for(int i=0; i< data.length; i++){
-                    ontSdk.openWalletFile(data[i].Id+".json");
-                    data[i].Identity = ontSdk.getWalletMgr().createIdentity(password);
-                    data[i].Attributes[0] = new Attribute("name".getBytes(),"String".getBytes(),data[i].Name.getBytes());
-                    data[i].Attributes[1] = new Attribute("birthday".getBytes(),"String".getBytes(),data[i].Birthday.getBytes());                    
-                    ontSdk.getWalletMgr().writeWallet();
-                }   
-                
-
-                //work 
                 long t1 = System.currentTimeMillis();
                 for(int i=0; i< data.length; i++){
                     ontSdk.openWalletFile(data[i].Id+".json");
-                    ontSdk.nativevm().ontId().sendRegisterWithAttrs(data[i].Identity,password,data[i].Attributes,payerAcct,ontSdk.DEFAULT_GAS_LIMIT,0);
-                }
-                // for(int i=0; i< data.length; i++){
-                //     ontSdk.openWalletFile(data[i].Id+".json");
-                //     ontSdk.nativevm().ontId().sendRegister(data[i].Identity,password,payerAcct,ontSdk.DEFAULT_GAS_LIMIT,0);
-                // }
-                // for(int i=0; i< data.length; i++){
-                //     System.out.println("Attribute - "+i);
-                //     ontSdk.openWalletFile(data[i].Id+".json");
-                //     ontSdk.nativevm().ontId().sendAddAttributes(data[i].Identity.ontid,password,data[i].Identity.controls.get(0).getSalt(),data[i].Attributes,payerAcct,ontSdk.DEFAULT_GAS_LIMIT,0);
-                // }
+                    byte[] salt = ECC.generateKey(16);
+                    byte[] prikey = ECC.generateKey();
+                    com.github.ontio.account.Account acct = ontSdk.getWalletMgr().createAccount("",password,salt, prikey, false);
+                    IdentityInfo info = new IdentityInfo();
+                    info.ontid = Common.didont + Address.addressFromPubKey(acct.serializePublicKey()).toBase58();
+                    info.pubkey = Helper.toHexString(acct.serializePublicKey());
+                    // info.setPrikey(Helper.toHexString(acct.serializePrivateKey()));
+                    // info.setPriwif(acct.exportWif());
+                    // info.encryptedPrikey = acct.exportGcmEncryptedPrikey(password, salt,ontSdk.getWalletMgr().getWalletFile().getScrypt().getN());
+                    // info.addressU160 = acct.getAddressU160().toHexString();
+
+                    data[i].Identity = ontSdk.getWalletMgr().getWallet().getIdentity(info.ontid);
+                    data[i].Attributes[0] = new Attribute("name".getBytes(),"String".getBytes(),data[i].Name.getBytes());
+                    data[i].Attributes[1] = new Attribute("birthday".getBytes(),"String".getBytes(),data[i].Birthday.getBytes());                    
+                    data[i].Tx = ontSdk.nativevm().ontId().makeRegisterWithAttrs(info, password,data[i].Identity.controls.get(0).getSalt(), data[i].Attributes, payerAcct.getAddressU160().toBase58(), ontSdk.DEFAULT_GAS_LIMIT, 0);
+
+                    ontSdk.addSign(data[i].Tx, acct);
+                    ontSdk.addSign(data[i].Tx, payerAcct);
+                    ontSdk.getWalletMgr().writeWallet(); 
+                    System.out.println("Signed :"+i );  
+                }   
                 long t2 = System.currentTimeMillis();
                 System.out.println("time is :" + (t2 -t1)/1000.0 );
 
+                //up to blockchain
+                t1 = System.currentTimeMillis();
+                for(int i=0; i< data.length; i++){
+                    boolean b = ontSdk.getConnect().sendRawTransaction(data[i].Tx.toHexString());
+                    System.out.println("status :"+b );
+                }
 
-                // show result 
-                // Thread.sleep(6000);
-                // for(int i=0; i< data.length; i++){                
-                //     String ddo = ontSdk.nativevm().ontId().sendGetDDO(data[i].Identity.ontid);
-                //     System.out.println(ddo);
-                // }
+                t2 = System.currentTimeMillis();
+                System.out.println("time is :" + (t2 -t1)/1000.0 );
+
+
+                // check  result 
+                Thread.sleep(6000);
+                for(int i=0; i< data.length; i++){                
+                    String ddo = ontSdk.nativevm().ontId().sendGetDDO(data[i].Identity.ontid);
+                    System.out.println(ddo);
+                }
                 
                 System.exit(0);                              
             }

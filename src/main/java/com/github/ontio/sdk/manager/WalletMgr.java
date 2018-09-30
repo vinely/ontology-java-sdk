@@ -319,7 +319,7 @@ public class WalletMgr {
     }
 
 
-    private com.github.ontio.account.Account createAccount(String label, String password, byte[] salt,byte[] privateKey, boolean accountFlag) throws Exception {
+    public com.github.ontio.account.Account createAccount(String label, String password, byte[] salt,byte[] privateKey, boolean accountFlag) throws Exception {
         com.github.ontio.account.Account account = new com.github.ontio.account.Account(privateKey, scheme);
         Account acct;
         switch (scheme) {
