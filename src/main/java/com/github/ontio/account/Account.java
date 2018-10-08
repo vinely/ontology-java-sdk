@@ -22,7 +22,7 @@ package com.github.ontio.account;
 
 import com.github.ontio.common.ErrorCode;
 import com.github.ontio.crypto.*;
-import com.github.ontio.common.Common;
+// import com.github.ontio.common.Common;
 import com.github.ontio.common.Helper;
 import com.github.ontio.common.Address;
 import com.github.ontio.crypto.Base58;
@@ -41,13 +41,13 @@ import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.util.Strings;
 
 import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
+// import javax.crypto.CipherInputStream;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.ByteArrayInputStream;
+// import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
+// import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.*;

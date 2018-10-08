@@ -7,16 +7,19 @@ import com.github.ontio.common.Helper;
 import com.github.ontio.core.ontid.Attribute;
 import com.github.ontio.core.transaction.Transaction;
 import com.github.ontio.crypto.SignatureScheme;
-import com.github.ontio.sdk.info.AccountInfo;
+// import com.github.ontio.sdk.info.AccountInfo;
 import com.github.ontio.sdk.info.IdentityInfo;
 import com.github.ontio.sdk.wallet.Account;
 import com.github.ontio.sdk.wallet.Identity;
+
+import org.bouncycastle.util.test.TestResult;
+
 import com.github.ontio.crypto.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+// import java.util.ArrayList;
+// import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+// import java.util.Map;
 
 public class NativeOntIdDemo {
 
@@ -68,6 +71,29 @@ public class NativeOntIdDemo {
             com.github.ontio.account.Account account1 = new com.github.ontio.account.Account(Helper.hexToBytes(privatekey1),SignatureScheme.SHA256WITHECDSA);
 
 
+            // renshan version
+            // account create take a lot time
+            com.github.ontio.account.Account payerAcct1 = ontSdk.getWalletMgr().createAccount("com.fe-cred.idfor", password, false);                    
+
+
+            if (true){
+                long t1 = System.currentTimeMillis();
+                for(int i=0; i< data.length; i++){
+                    ontSdk.openWalletFile(data[i].Id + ".json");
+                   
+                    data[i].Attributes[0] = new Attribute("name".getBytes(),"String".getBytes(),data[i].Name.getBytes());
+                    data[i].Attributes[1] = new Attribute("birthday".getBytes(),"String".getBytes(),data[i].Birthday.getBytes());                    
+                    ontSdk.nativevm().ontId().sendRegisterWithAttrs(data[i].Id, password, data[i].Attributes,  payerAcct1, ontSdk.DEFAULT_GAS_LIMIT, 0);
+
+                    ontSdk.getWalletMgr().writeWallet(); 
+                    System.out.println("Signed :"+i); 
+                }   
+                long t2 = System.currentTimeMillis();
+                System.out.println("time is :" + (t2 -t1)/1000.0 );
+
+                System.exit(0);               
+            }
+
             if (true){
                 // prepare 
                 long t1 = System.currentTimeMillis();
@@ -77,7 +103,8 @@ public class NativeOntIdDemo {
                     byte[] prikey = ECC.generateKey();
                     com.github.ontio.account.Account acct = ontSdk.getWalletMgr().createAccount("",password,salt, prikey, false);
                     IdentityInfo info = new IdentityInfo();
-                    info.ontid = Common.didont + Address.addressFromPubKey(acct.serializePublicKey()).toBase58();
+
+                    info.ontid = Common.didont + acct.getAddressU160().toBase58();
                     info.pubkey = Helper.toHexString(acct.serializePublicKey());
                     // info.setPrikey(Helper.toHexString(acct.serializePrivateKey()));
                     // info.setPriwif(acct.exportWif());
@@ -87,18 +114,18 @@ public class NativeOntIdDemo {
                     data[i].Identity = ontSdk.getWalletMgr().getWallet().getIdentity(info.ontid);
                     data[i].Attributes[0] = new Attribute("name".getBytes(),"String".getBytes(),data[i].Name.getBytes());
                     data[i].Attributes[1] = new Attribute("birthday".getBytes(),"String".getBytes(),data[i].Birthday.getBytes());                    
-                    data[i].Tx = ontSdk.nativevm().ontId().makeRegisterWithAttrs(info, password,data[i].Identity.controls.get(0).getSalt(), data[i].Attributes, payerAcct.getAddressU160().toBase58(), ontSdk.DEFAULT_GAS_LIMIT, 0);
+                    data[i].Tx = ontSdk.nativevm().ontId().makeRegisterWithAttrs(info, password,data[i].Identity.controls.get(0).getSalt(), data[i].Attributes, acct.getAddressU160().toBase58(), ontSdk.DEFAULT_GAS_LIMIT, 0);
 
                     ontSdk.addSign(data[i].Tx, acct);
-                    ontSdk.addSign(data[i].Tx, payerAcct);
+                    // ontSdk.addSign(data[i].Tx, acct);
                     ontSdk.getWalletMgr().writeWallet(); 
                     System.out.println("Signed :"+i );  
                 }   
                 long t2 = System.currentTimeMillis();
-                System.out.println("time is :" + (t2 -t1)/1000.0 );
+                // System.out.println("time is :" + (t2 -t1)/1000.0 );
 
-                //up to blockchain
-                t1 = System.currentTimeMillis();
+                // //up to blockchain
+                // t1 = System.currentTimeMillis();
                 for(int i=0; i< data.length; i++){
                     boolean b = ontSdk.getConnect().sendRawTransaction(data[i].Tx.toHexString());
                     System.out.println("status :"+b );
@@ -109,7 +136,7 @@ public class NativeOntIdDemo {
 
 
                 // check  result 
-                Thread.sleep(6000);
+                Thread.sleep(12000);
                 for(int i=0; i< data.length; i++){                
                     String ddo = ontSdk.nativevm().ontId().sendGetDDO(data[i].Identity.ontid);
                     System.out.println(ddo);

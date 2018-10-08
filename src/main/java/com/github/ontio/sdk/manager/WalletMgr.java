@@ -31,7 +31,7 @@ import com.github.ontio.sdk.wallet.Control;
 import com.github.ontio.sdk.wallet.Identity;
 import com.github.ontio.sdk.wallet.Wallet;
 import com.github.ontio.common.Common;
-import com.github.ontio.core.DataSignature;
+// import com.github.ontio.core.DataSignature;
 import com.alibaba.fastjson.JSON;
 
 import java.io.*;
@@ -318,7 +318,12 @@ public class WalletMgr {
         return info;
     }
 
-
+    public com.github.ontio.account.Account createAccount(String label, String password, boolean accountFlag) throws Exception {
+        byte[] salt = ECC.generateKey(16);
+        byte[] prikey = ECC.generateKey();        
+        return createAccount(label, password,  salt, prikey, accountFlag);
+    }
+    
     public com.github.ontio.account.Account createAccount(String label, String password, byte[] salt,byte[] privateKey, boolean accountFlag) throws Exception {
         com.github.ontio.account.Account account = new com.github.ontio.account.Account(privateKey, scheme);
         Account acct;

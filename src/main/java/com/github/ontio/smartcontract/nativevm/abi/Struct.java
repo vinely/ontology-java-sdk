@@ -1,13 +1,10 @@
 package com.github.ontio.smartcontract.nativevm.abi;
-
-import com.github.ontio.common.Address;
-
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class Struct {
-    public List list = new ArrayList();
+    public List<Object> list = new ArrayList<Object>();
     public Struct(){
 
     }

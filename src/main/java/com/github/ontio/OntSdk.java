@@ -22,7 +22,7 @@ package com.github.ontio;
 import com.github.ontio.account.Account;
 import com.github.ontio.common.Common;
 import com.github.ontio.common.ErrorCode;
-import com.github.ontio.common.Helper;
+// import com.github.ontio.common.Helper;
 import com.github.ontio.core.DataSignature;
 import com.github.ontio.core.program.Program;
 import com.github.ontio.core.transaction.Transaction;

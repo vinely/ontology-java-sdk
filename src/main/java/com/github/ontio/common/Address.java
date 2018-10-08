@@ -24,19 +24,19 @@ import com.github.ontio.core.scripts.ScriptBuilder;
 import com.github.ontio.core.scripts.ScriptOp;
 import com.github.ontio.crypto.Base58;
 import com.github.ontio.crypto.Digest;
-import com.github.ontio.crypto.ECC;
-import com.github.ontio.crypto.KeyType;
-import com.github.ontio.io.BinaryWriter;
+// import com.github.ontio.crypto.ECC;
+// import com.github.ontio.crypto.KeyType;
+// import com.github.ontio.io.BinaryWriter;
 import com.github.ontio.sdk.exception.SDKException;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.Arrays;
-import org.bouncycastle.math.ec.ECPoint;
+// import java.io.ByteArrayOutputStream;
+// import java.io.IOException;
+// import java.math.BigInteger;
+// import java.util.Arrays;
+// import org.bouncycastle.math.ec.ECPoint;
 
-import static com.github.ontio.crypto.KeyType.ECDSA;
-import static com.github.ontio.crypto.KeyType.SM2;
+// import static com.github.ontio.crypto.KeyType.ECDSA;
+// import static com.github.ontio.crypto.KeyType.SM2;
 
 /**
  * Custom type which inherits base class defines 20-bit data,
@@ -90,10 +90,15 @@ public class Address extends UIntBase implements Comparable<Address> {
     }
 
     public static Address addressFromPubKey(byte[] publicKey) {
-        ScriptBuilder sb = new ScriptBuilder();
-        sb.emitPushByteArray(publicKey);
-        sb.add(ScriptOp.OP_CHECKSIG);
-        return Address.toScriptHash(sb.toArray());
+        byte[] script = new byte[]{};
+        try(ScriptBuilder sb = new ScriptBuilder()){
+            sb.emitPushByteArray(publicKey);
+            sb.add(ScriptOp.OP_CHECKSIG);
+            script = sb.toArray();
+        } catch (Exception e) {
+            throw e;
+        }
+        return Address.toScriptHash(script);
     }
 
     public static Address addressFromMultiPubKeys(int m, byte[]... publicKeys) throws Exception {

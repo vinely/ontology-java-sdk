@@ -20,16 +20,16 @@
 package com.github.ontio.smartcontract.nativevm.abi;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.github.ontio.account.Account;
+// import com.alibaba.fastjson.JSONObject;
+// import com.github.ontio.account.Account;
 import com.github.ontio.common.Address;
-import com.github.ontio.common.Common;
+// import com.github.ontio.common.Common;
 import com.github.ontio.common.ErrorCode;
-import com.github.ontio.common.Helper;
+// import com.github.ontio.common.Helper;
 import com.github.ontio.core.ontid.Attribute;
 import com.github.ontio.core.scripts.ScriptBuilder;
 import com.github.ontio.core.scripts.ScriptOp;
-import com.github.ontio.core.transaction.Transaction;
+// import com.github.ontio.core.transaction.Transaction;
 import com.github.ontio.io.BinaryWriter;
 import com.github.ontio.sdk.exception.SDKException;
 
@@ -37,16 +37,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+// import java.nio.ByteBuffer;
+// import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
 public class NativeBuildParams {
     public static  byte[] buildParams(Object ...params) throws SDKException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        BinaryWriter bw = new BinaryWriter(baos);
-        try {
+        try (BinaryWriter bw = new BinaryWriter(baos)){
             for (Object param : params) {
                 if(param instanceof Integer){
                     bw.writeInt(((Integer) param).intValue());
@@ -92,7 +91,7 @@ public class NativeBuildParams {
                     builder.add(ScriptOp.OP_TOALTSTACK);
                     for (int k = 0; k < ((Struct) val).list.size(); k++) {
                         Object o = ((Struct) val).list.get(k);
-                        List tmpList = new ArrayList();
+                        List<Object> tmpList = new ArrayList<Object>();
                         tmpList.add(o);
                         createCodeParamsScript(builder, tmpList);
                         builder.add(ScriptOp.OP_DUPFROMALTSTACK);
@@ -100,10 +99,11 @@ public class NativeBuildParams {
                         builder.add(ScriptOp.OP_APPEND);
                     }
                     builder.add(ScriptOp.OP_FROMALTSTACK);
-                } else if (val instanceof List) {
-                    List tmp = (List) val;
+                } else if (val instanceof List<?>) {
+                    @SuppressWarnings("unchecked")
+                    List<Object> tmp = (List<Object>) val;
                     for (int k = tmp.size() - 1; k >= 0; k--) {
-                        List tmpList = new ArrayList();
+                        List<Object> tmpList = new ArrayList<Object>();
                         tmpList.add(tmp.get(k));
                         createCodeParamsScript(builder,tmpList );
                     }
@@ -127,9 +127,9 @@ public class NativeBuildParams {
         return createCodeParamsScript(sb,list);
     }
     public static byte[] serializeAbiFunction( AbiFunction abiFunction) throws Exception {
-        List list = new ArrayList<Object>();
+        List<Object> list = new ArrayList<Object>();
         list.add(abiFunction.getName().getBytes());
-        List tmp = new ArrayList<Object>();
+        List<Object> tmp = new ArrayList<Object>();
         for (Parameter obj : abiFunction.getParameters()) {
             if ("Byte".equals(obj.getType())) {
                 tmp.add(JSON.parseObject(obj.getValue(), byte.class));

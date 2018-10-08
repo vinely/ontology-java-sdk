@@ -34,7 +34,7 @@ import com.github.ontio.crypto.KeyType;
 import com.github.ontio.io.BinaryReader;
 import com.github.ontio.io.BinaryWriter;
 import com.github.ontio.merkle.MerkleVerifier;
-import com.github.ontio.network.exception.ConnectorException;
+// import com.github.ontio.network.exception.ConnectorException;
 import com.github.ontio.sdk.claim.Claim;
 import com.github.ontio.sdk.exception.SDKException;
 import com.github.ontio.sdk.info.AccountInfo;
@@ -45,8 +45,9 @@ import com.github.ontio.smartcontract.nativevm.abi.Struct;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+// import java.io.IOException;
 import java.util.*;
+import com.github.ontio.crypto.*;
 
 public class OntId {
     private OntSdk sdk;
@@ -131,13 +132,67 @@ public class OntId {
         IdentityInfo info = sdk.getWalletMgr().getIdentityInfo(ontid, password,salt);
         byte[] pk = Helper.hexToBytes(info.pubkey);
 
-        List list = new ArrayList();
+        List<Object> list = new ArrayList<Object>();
         list.add(new Struct().add(info.ontid,pk));
         byte[] args = NativeBuildParams.createCodeParamsScript(list);
         Transaction tx = sdk.vm().buildNativeParams(new Address(Helper.hexToBytes(contractAddress)),"regIDWithPublicKey",args,payer,gaslimit, gasprice);
         return tx;
     }
 
+    /**
+     * @param label
+     * @param password
+     * @param attributes
+     * @param payerAcct
+     * @param gaslimit
+     * @param gasprice
+     * @return
+     * @throws Exception
+     */
+    public String sendRegisterWithAttrs(String label, String password, Attribute[] attributes, Account payerAcct, long gaslimit, long gasprice) throws Exception {
+        byte[] salt = ECC.generateKey(16);
+        byte[] prikey = ECC.generateKey();
+        com.github.ontio.account.Account acct = sdk.getWalletMgr().createAccount(label, password, salt, prikey, false);
+        return sendRegisterWithAttrs(acct, password, attributes, payerAcct, gaslimit, gasprice);
+
+    }
+
+    /**
+     * @param acct
+     * @param password
+     * @param attributes
+     * @param payerAcct
+     * @param gaslimit
+     * @param gasprice
+     * @return
+     * @throws Exception
+     */
+    public String sendRegisterWithAttrs(Account acct, String password, Attribute[] attributes, Account payerAcct, long gaslimit, long gasprice) throws Exception {
+        if (acct == null || password == null || password.equals("") || payerAcct == null) {
+            throw new SDKException(ErrorCode.ParamErr("parameter should not be null"));
+        }
+        if (gasprice < 0 || gaslimit < 0) {
+            throw new SDKException(ErrorCode.ParamErr("gas or gaslimit should not be less than 0"));
+        }
+        if (contractAddress == null) {
+            throw new SDKException(ErrorCode.NullCodeHash);
+        }
+        IdentityInfo info = new IdentityInfo();
+        info.ontid = Common.didont + acct.getAddressU160().toBase58();
+        info.pubkey = Helper.toHexString(acct.serializePublicKey());        
+     
+        Identity ident = sdk.getWalletMgr().getWallet().getIdentity(info.ontid);
+        Transaction tx = makeRegisterWithAttrs(info, password, ident.controls.get(0).getSalt(), attributes, payerAcct.getAddressU160().toBase58(), gaslimit, gasprice);
+        sdk.addSign(tx, acct);
+        sdk.addSign(tx, payerAcct);
+        boolean b = sdk.getConnect().sendRawTransaction(tx.toHexString());
+        if (b){
+            return tx.hash().toHexString();
+        }else{
+            return "";
+        }
+        
+    }    
 
     /**
      * @param ident
@@ -165,10 +220,14 @@ public class OntId {
         Transaction tx = makeRegisterWithAttrs(info, password,ident.controls.get(0).getSalt(), attributes, payerAcct.getAddressU160().toBase58(), gaslimit, gasprice);
         sdk.signTx(tx, ontid, password,ident.controls.get(0).getSalt());
         sdk.addSign(tx, payerAcct);
-        Identity identity = sdk.getWalletMgr().getWallet().addOntIdController(ontid, info.encryptedPrikey, info.ontid,info.pubkey);
         sdk.getWalletMgr().writeWallet();
         boolean b = sdk.getConnect().sendRawTransaction(tx.toHexString());
-        return tx.hash().toHexString();
+        if (b){
+            return tx.hash().toHexString();
+        }else{
+            return "";
+        }
+        
     }
 
     /**
@@ -193,7 +252,7 @@ public class OntId {
         }
         byte[] pk = Helper.hexToBytes(info.pubkey);
 
-        List list = new ArrayList();
+        List<Object> list = new ArrayList<Object>();
         Struct struct = new Struct().add(info.ontid.getBytes(), pk);
         struct.add(attributes.length);
         for (int i = 0; i < attributes.length; i++) {
@@ -225,7 +284,7 @@ public class OntId {
             throw new SDKException(ErrorCode.NullCodeHash);
         }
 
-        List list = new ArrayList();
+        List<Object> list = new ArrayList<Object>();
         list.add(ontid.getBytes());
         byte[] arg = NativeBuildParams.createCodeParamsScript(list);
         Transaction tx = sdk.vm().buildNativeParams(new Address(Helper.hexToBytes(contractAddress)),"getPublicKeys",arg,null,0,0);
@@ -237,10 +296,10 @@ public class OntId {
         }
         ByteArrayInputStream bais = new ByteArrayInputStream(Helper.hexToBytes(res));
         BinaryReader br = new BinaryReader(bais);
-        List pubKeyList = new ArrayList();
+        List<Object> pubKeyList = new ArrayList<Object>();
         while (true) {
             try {
-                Map publicKeyMap = new HashMap();
+                Map<String,Object> publicKeyMap = new HashMap<String,Object>();
                 publicKeyMap.put("PubKeyId", ontid + "#keys-" + String.valueOf(br.readInt()));
                 byte[] pubKey = br.readVarBytes();
                 publicKeyMap.put("Type", KeyType.fromLabel(pubKey[0]));
@@ -251,6 +310,7 @@ public class OntId {
                 break;
             }
         }
+        br.close();
         return JSON.toJSONString(pubKeyList);
     }
 
@@ -269,7 +329,7 @@ public class OntId {
 //        byte[] parabytes = NativeBuildParams.buildParams(ontid.getBytes(), index);
 //        Transaction tx = sdk.vm().makeInvokeCodeTransaction(contractAddress, "getKeyState", parabytes, null, 0, 0);
 
-        List list = new ArrayList();
+        List<Object> list = new ArrayList<Object>();
         list.add(new Struct().add(ontid.getBytes(),index));
         byte[] arg = NativeBuildParams.createCodeParamsScript(list);
         Transaction tx = sdk.vm().buildNativeParams(new Address(Helper.hexToBytes(contractAddress)),"getKeyState",arg,null,0,0);
@@ -289,9 +349,7 @@ public class OntId {
         if (contractAddress == null) {
             throw new SDKException(ErrorCode.NullCodeHash);
         }
-
-
-        List list = new ArrayList();
+        List<Object> list = new ArrayList<Object>();
         list.add(ontid.getBytes());
         byte[] arg = NativeBuildParams.createCodeParamsScript(list);
         Transaction tx = sdk.vm().buildNativeParams(new Address(Helper.hexToBytes(contractAddress)),"getAttributes",arg,null,0,0);
@@ -304,10 +362,10 @@ public class OntId {
 
         ByteArrayInputStream bais = new ByteArrayInputStream(Helper.hexToBytes(res));
         BinaryReader br = new BinaryReader(bais);
-        List attrsList = new ArrayList();
+        List<Object> attrsList = new ArrayList<Object>();
         while (true) {
             try {
-                Map attributeMap = new HashMap();
+                Map<String,String> attributeMap = new HashMap<String,String>();
                 attributeMap.put("Key", new String(br.readVarBytes()));
                 attributeMap.put("Type", new String(br.readVarBytes()));
                 attributeMap.put("Value", new String(br.readVarBytes()));
@@ -316,7 +374,7 @@ public class OntId {
                 break;
             }
         }
-
+        br.close();
         return JSON.toJSONString(attrsList);
     }
 
