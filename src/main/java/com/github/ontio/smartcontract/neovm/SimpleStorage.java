@@ -62,9 +62,8 @@ public class SimpleStorage {
         return contractAddress;
     }
 
-    public String sendPost(String issuerOntid, String password, byte[] salt, String subjectOntid, String key, String value, Account payerAcct, long gaslimit, long gasprice) throws Exception {
-        if(issuerOntid==null||issuerOntid.equals("")||password==null||password.equals("")||subjectOntid==null||subjectOntid.equals("")
-                ||payerAcct == null){
+    public String sendPost(String key, String value, Account payerAcct, long gaslimit, long gasprice) throws Exception {
+        if(payerAcct == null){
             throw new SDKException(ErrorCode.ParamErr("parameter should not be null"));
         }
         if(gaslimit < 0 || gasprice < 0){
@@ -73,9 +72,7 @@ public class SimpleStorage {
         if (contractAddress == null) {
             throw new SDKException(ErrorCode.NullCodeHash);
         }
-        String addr = issuerOntid.replace(Common.didont,"");
         Transaction tx = makeStorage("Post", key ,value,payerAcct.getAddressU160().toBase58(),gaslimit,gasprice);
-        sdk.signTx(tx, addr, password,salt);
         sdk.addSign(tx,payerAcct);
         boolean b = sdk.getConnect().sendRawTransaction(tx.toHexString());
         if (b) {
@@ -84,9 +81,8 @@ public class SimpleStorage {
         return null;
     }
 
-    public String sendPut(String issuerOntid, String password, byte[] salt, String subjectOntid, String key, String value, Account payerAcct, long gaslimit, long gasprice) throws Exception {
-        if(issuerOntid==null||issuerOntid.equals("")||password==null||password.equals("")||subjectOntid==null||subjectOntid.equals("")
-                ||payerAcct == null){
+    public String sendPut( String key, String value, Account payerAcct, long gaslimit, long gasprice) throws Exception {
+        if(payerAcct == null){
             throw new SDKException(ErrorCode.ParamErr("parameter should not be null"));
         }
         if(gaslimit < 0 || gasprice < 0){
@@ -95,9 +91,7 @@ public class SimpleStorage {
         if (contractAddress == null) {
             throw new SDKException(ErrorCode.NullCodeHash);
         }
-        String addr = issuerOntid.replace(Common.didont,"");
         Transaction tx = makeStorage("Put", key ,value, payerAcct.getAddressU160().toBase58(),gaslimit,gasprice);
-        sdk.signTx(tx, addr, password,salt);
         sdk.addSign(tx,payerAcct);
         boolean b = sdk.getConnect().sendRawTransaction(tx.toHexString());
         if (b) {

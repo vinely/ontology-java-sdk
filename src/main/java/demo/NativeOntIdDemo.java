@@ -76,7 +76,7 @@ public class NativeOntIdDemo {
             com.github.ontio.account.Account payerAcct1 = ontSdk.getWalletMgr().createAccount("com.fe-cred.idfor", password, false);                    
 
 
-            if (true){
+            if (false){
                 long t1 = System.currentTimeMillis();
                 for(int i=0; i< data.length; i++){
                     ontSdk.openWalletFile(data[i].Id + ".json");
@@ -114,18 +114,18 @@ public class NativeOntIdDemo {
                     data[i].Identity = ontSdk.getWalletMgr().getWallet().getIdentity(info.ontid);
                     data[i].Attributes[0] = new Attribute("name".getBytes(),"String".getBytes(),data[i].Name.getBytes());
                     data[i].Attributes[1] = new Attribute("birthday".getBytes(),"String".getBytes(),data[i].Birthday.getBytes());                    
-                    data[i].Tx = ontSdk.nativevm().ontId().makeRegisterWithAttrs(info, password,data[i].Identity.controls.get(0).getSalt(), data[i].Attributes, acct.getAddressU160().toBase58(), ontSdk.DEFAULT_GAS_LIMIT, 0);
+                    data[i].Tx = ontSdk.nativevm().ontId().makeRegisterWithAttrs(info, password,data[i].Identity.controls.get(0).getSalt(), data[i].Attributes, acct.getAddressU160().toBase58(), /* acct.getAddressU160().toBase58(),*/ ontSdk.DEFAULT_GAS_LIMIT, 0);
 
+                    ontSdk.addSign(data[i].Tx, payerAcct);
                     ontSdk.addSign(data[i].Tx, acct);
-                    // ontSdk.addSign(data[i].Tx, acct);
                     ontSdk.getWalletMgr().writeWallet(); 
                     System.out.println("Signed :"+i );  
                 }   
                 long t2 = System.currentTimeMillis();
-                // System.out.println("time is :" + (t2 -t1)/1000.0 );
+                System.out.println("time is :" + (t2 -t1)/1000.0 );
 
                 // //up to blockchain
-                // t1 = System.currentTimeMillis();
+                t1 = System.currentTimeMillis();
                 for(int i=0; i< data.length; i++){
                     boolean b = ontSdk.getConnect().sendRawTransaction(data[i].Tx.toHexString());
                     System.out.println("status :"+b );
@@ -136,11 +136,11 @@ public class NativeOntIdDemo {
 
 
                 // check  result 
-                Thread.sleep(12000);
-                for(int i=0; i< data.length; i++){                
-                    String ddo = ontSdk.nativevm().ontId().sendGetDDO(data[i].Identity.ontid);
-                    System.out.println(ddo);
-                }
+                // Thread.sleep(12000);
+                // for(int i=0; i< data.length; i++){                
+                //     String ddo = ontSdk.nativevm().ontId().sendGetDDO(data[i].Identity.ontid);
+                //     System.out.println(ddo);
+                // }
                 
                 System.exit(0);                              
             }
